@@ -6,7 +6,7 @@ export default {
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
+		"./src/**/*.{ts,tsx}"
 	],
 	prefix: "",
 	theme: {
@@ -68,6 +68,10 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				display: ['Montserrat', 'sans-serif'],
+			},
 			keyframes: {
 				'accordion-down': {
 					from: {
@@ -84,13 +88,54 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-20px)' },
+				},
+				'fade-in': {
+					'0%': { opacity: '0', transform: 'translateY(20px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
+				'scale-in': {
+					'0%': { opacity: '0', transform: 'scale(0.9)' },
+					'100%': { opacity: '1', transform: 'scale(1)' },
+				},
+				'slide-up': {
+					'0%': { opacity: '0', transform: 'translateY(50px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
+				'rotate-3d': {
+					'0%': { transform: 'rotate3d(1, 1, 0, 0deg)' },
+					'100%': { transform: 'rotate3d(1, 1, 0, 360deg)' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 6s ease-in-out infinite',
+				'fade-in': 'fade-in 0.6s ease-out',
+				'scale-in': 'scale-in 0.5s ease-out',
+				'slide-up': 'slide-up 0.6s ease-out',
+				'rotate-3d': 'rotate-3d 20s linear infinite',
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }: any) {
+			const newUtilities = {
+				'.perspective-1000': {
+					perspective: '1000px',
+				},
+				'.transform-3d': {
+					'transform-style': 'preserve-3d',
+				},
+				'.backface-hidden': {
+					'backface-visibility': 'hidden',
+				},
+			}
+			addUtilities(newUtilities)
+		}
+	],
 } satisfies Config;
