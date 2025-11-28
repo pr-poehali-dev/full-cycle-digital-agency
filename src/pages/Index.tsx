@@ -80,6 +80,9 @@ const process = [
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
   const [activeSection, setActiveSection] = useState('home');
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -92,6 +95,35 @@ const Index = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
       setActiveSection(id);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/12f1320e-6e19-4acd-9609-60738f0becd3', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -347,38 +379,77 @@ const Index = () => {
             </div>
 
             <Card className="p-12 bg-card/50 backdrop-blur border-border">
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Ваше имя</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
-                    placeholder="Иван Иванов"
+              <form onSubmit={handleSubmit}>
+                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Ваше имя</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                      placeholder="Иван Иванов"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                      placeholder="ivan@example.com"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mb-8">
+                  <label className="block text-sm font-medium mb-2">Расскажите о проекте</label>
+                  <textarea
+                    rows={5}
+                    required
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors resize-none"
+                    placeholder="Опишите ваши цели и задачи..."
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
-                    placeholder="ivan@example.com"
-                  />
-                </div>
-              </div>
-              
-              <div className="mb-8">
-                <label className="block text-sm font-medium mb-2">Расскажите о проекте</label>
-                <textarea
-                  rows={5}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors resize-none"
-                  placeholder="Опишите ваши цели и задачи..."
-                />
-              </div>
 
-              <Button size="lg" className="w-full text-lg py-6 glow-strong">
-                <Icon name="Send" className="mr-2" size={20} />
-                Отправить заявку
-              </Button>
+                {submitStatus === 'success' && (
+                  <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg text-primary font-medium flex items-center gap-2">
+                    <Icon name="CheckCircle" size={20} />
+                    Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.
+                  </div>
+                )}
+
+                {submitStatus === 'error' && (
+                  <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive font-medium flex items-center gap-2">
+                    <Icon name="AlertCircle" size={20} />
+                    Ошибка отправки. Попробуйте позже или свяжитесь с нами напрямую.
+                  </div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="w-full text-lg py-6 glow-strong"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Icon name="Loader2" className="mr-2 animate-spin" size={20} />
+                      Отправка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Send" className="mr-2" size={20} />
+                      Отправить заявку
+                    </>
+                  )}
+                </Button>
+              </form>
             </Card>
 
             <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
